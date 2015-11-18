@@ -575,6 +575,58 @@ void SSLWorld::recvActions()
                     dBodySetAngularVel(ball->body,0,0,0);
                 }
             }
+            if(packet.has_debuginfo())
+            {
+                // g->debugger.reset();
+                // if(packet.debuginfo().circle_size()>0 ||
+                //    packet.debuginfo().line_size()>0) {
+                //     g->debugger.reset();
+                // }
+                sslDebug_Data d = packet.debuginfo();
+                map<string, vector<Debug_Line> > &debugLines = g->debugLines;
+                map<string, vector<Debug_Circle> > &debugCircles = g->debugCircles;
+                string id = d.id();
+                debugLines[id] = vector<Debug_Line>();
+                debugCircles[id] = vector<Debug_Circle>();
+                for (int i = 0; i < d.line_size(); ++i)
+                {
+                    debugLines[id].push_back(d.line(i));
+                }
+                for (int i = 0; i < d.circle_size(); ++i)
+                {
+                    debugCircles[id].push_back(d.circle(i));
+                }
+                // for (map<string, vector<Debug_Line> >::iterator it = debugLines.begin(): it != debugLines.end(); it++) {
+                //     vector<Debug_Line> &lines = it->second;
+                //     for (int j = 0; j < lines.size(); ++j)
+                //     {
+                //         g->debugger.addLine()
+                //     }
+
+                // }
+                // for(int i=0; i<d.circle_size(); ++i) {
+                //     g->debugger.addCircle(d.circle(i).x(), d.circle(i).y(), d.circle(i).radius());
+                // }
+                // for(int i=0; i<d.line_size(); ++i) {
+                //     g->debugger.addLine(d.line(i).x1(),d.line(i).y1(), d.line(i).x2(), d.line(i).y2());
+                // }
+                if(packet.debuginfo().botpos_size() > 0)
+                {
+                    for(int i=0; i < d.botpos_size(); i++)
+                    {
+                        this->robots[robotIndex(d.botpos(i).id(), d.botpos(i).team())]->setXY(d.botpos(i).x()/1000.0, d.botpos(i).y()/1000.0);
+                        this->robots[robotIndex(d.botpos(i).id(), d.botpos(i).team())]->setDir(d.botpos(i).dir());
+                        this->robots[robotIndex(d.botpos(i).id(), d.botpos(i).team())]->setSpeed(d.botpos(i).vx()/1000.0, d.botpos(i).vy()/1000.0, d.botpos(i).vz()/1000.0);
+                    }
+                }
+                if(packet.debuginfo().ballpos_size() != 0)
+                {
+                    assert(packet.debuginfo().ballpos_size() == 1);
+                    this->ball->setBodyPosition(d.ballpos(0).x(), d.ballpos(0).y(), 40);
+                    dBodySetLinearVel(ball->body, d.ballpos(0).vx(), d.ballpos(0).vy(), d.ballpos(0).vz());
+                    dBodySetAngularVel(ball->body, 0.0, 0.0, 0.0);
+                }
+            }
         }
     }
 }

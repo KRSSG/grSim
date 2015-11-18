@@ -18,6 +18,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #include "graphics.h"
 #include <QImage>
+#include <QColor>
 #include <math.h>
 
 
@@ -691,6 +692,36 @@ void CGraphics::drawSSLGround(dReal SSL_FIELD_RAD,dReal SSL_FIELD_LENGTH,dReal S
         cos1 = cos2;
         sin1 = sin2;
     }
+    // Debug shapes
+
+    // lines
+    for (map<string, vector<Debug_Line> >::iterator it = debugLines.begin(); it != debugLines.end(); it++) {
+        vector<Debug_Line> &lines = it->second;
+        dReal pos1[3], pos2[3];
+        pos1[2] = epsilon;
+        pos2[2] = epsilon;
+        for (int j = 0; j < lines.size(); ++j)
+        {
+            pos1[0] = lines[j].x1()/(1000.);
+            pos1[1] = lines[j].y1()/(1000.);
+            pos2[0] = lines[j].x2()/(1000.);
+            pos2[1] = lines[j].y2()/(1000.);
+            drawLine(pos1, pos2, 4, lines[j].color());
+        }
+    }
+
+    // circles
+    for (map<string, vector<Debug_Circle> >:: iterator it = debugCircles.begin(); it!= debugCircles.end(); it++) {
+        vector<Debug_Circle> &circles = it->second;
+        for (int j = 0; j < circles.size(); ++j)
+        {
+            drawHollowCircle(circles[j].x()/(1000.), 
+                             circles[j].y()/(1000.),
+                             epsilon,
+                             circles[j].radius()/(1000.),
+                             circles[j].color());
+        }
+    }
 
     //Left defense area
 
@@ -947,6 +978,38 @@ void CGraphics::drawCircle(dReal x0,dReal y0,dReal z0,dReal r)
         ny = tmp;
     }
     glEnd();
+}
+
+void CGraphics::drawHollowCircle(dReal x0,dReal y0,dReal z0,dReal r, int color)
+{
+    if (graphicDisabled) return;
+    QColor c(Qt::GlobalColor(color+2));
+    glDisable(GL_LIGHTING);
+    glColor3f(c.redF(), c.greenF(), c.blueF());
+    glLineWidth(2);
+   
+    int i;
+    dReal tmp,ny,nz,a,ca,sa;
+    const int n = 24;   // number of sides to the cylinder (divisible by 4)
+
+    a = dReal(M_PI*2.0)/dReal(n);
+    sa = (dReal) sin(a);
+    ca = (dReal) cos(a);
+
+    // draw top cap
+    glShadeModel (GL_FLAT);
+    ny=1; nz=0;       // normal vector = (0,ny,nz)
+    glBegin (GL_LINE_LOOP);
+    for (i=0; i<=n; i++) {
+        glVertex3d (ny*r+x0,nz*r+y0,z0);
+        // rotate ny,nz
+        tmp = ca*ny - sa*nz;
+        nz = sa*ny + ca*nz;
+        ny = tmp;
+    }
+    glEnd();
+    glColor3f(1,1,1);
+    glEnable(GL_LIGHTING);
 }
 
 // draw a capped cylinder of length l and radius r, aligned along the x axis
@@ -1240,15 +1303,18 @@ void CGraphics::drawCapsule (const dReal pos[3], const dReal R[12],
 }
 
 
-void CGraphics::drawLine (const dReal pos1[3], const dReal pos2[3])
+void CGraphics::drawLine (const dReal pos1[3], const dReal pos2[3], const dReal lw, int color)
 {
     if (graphicDisabled) return;
+    QColor c(Qt::GlobalColor(color+2));
     glDisable (GL_LIGHTING);
-    glLineWidth (2);
-    glShadeModel (GL_FLAT);
-    glBegin (GL_LINES);
-    glVertex3f (pos1[0],pos1[1],pos1[2]);
-    glVertex3f (pos2[0],pos2[1],pos2[2]);
+    glColor3f(c.redF(), c.greenF(), c.blueF());
+    glLineWidth(lw);
+    glBegin(GL_LINES);
+    glVertex3f( pos1[0]     ,  pos1[1]     , pos1[2]);
+    glVertex3f( pos2[0]     ,  pos2[1]     , pos2[2]);
     glEnd();
+    glColor3f(1,1,1);
+    glEnable(GL_LIGHTING);
 }
 

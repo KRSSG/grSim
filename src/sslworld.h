@@ -39,6 +39,11 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "configwidget.h"
 
 #include "config.h"
+#include "grSim_Packet.pb.h"
+#include "sslDebug_Data.pb.h"
+
+using namespace std;
+
 
 #define WALL_COUNT 10
 
@@ -50,6 +55,7 @@ class SendingPacket {
     int t;
 };
 
+
 class SSLWorld : public QObject
 {
     Q_OBJECT
@@ -59,7 +65,7 @@ private:
     dReal last_dt;
     QList<SendingPacket*> sendQueue;
     char packet[200];
-    char *in_buffer;    
+    char *in_buffer;
 public:    
     dReal customDT;
     bool isGLEnabled;
