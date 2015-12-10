@@ -311,11 +311,12 @@ QImage* createNumber(int i,int r,int g,int b,int a)
     QBrush br;
     p->begin(img);
     QColor black(0,0,0,0);
-    for (int i=0;i<img->width();i++)
+    for (int i=0;i<img->width();i++) {
         for (int j=0;j<img->height();j++)
         {
             img->setPixel(i,j,black.rgba());
         }
+    }
     QColor txtcolor(r,g,b,a);
     QPen pen;
     pen.setStyle(Qt::SolidLine);

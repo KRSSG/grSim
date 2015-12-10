@@ -39,6 +39,33 @@ const dReal ground_ofsy  = 0.5;
 const dReal sky_scale    = 1.0f;    // sky texture scale (1/size)
 const dReal sky_height   = 1.0f;    // sky height above viewpoint
 
+// local function for gradient calculation
+QColor getHeatMapColor(float value)
+{
+  float red, green, blue;
+  float color[][3] = { {0,0,1}, {0,1,0}, {1,1,0}, {1,0,0} };
+  const int NUM_COLORS = sizeof(color)/sizeof(float[3]);
+    // A static array of 4 colors:  (blue,   green,  yellow,  red) using {r,g,b} for each.
+ 
+  int idx1;        // |-- Our desired color will be between these two indexes in "color".
+  int idx2;        // |
+  float fractBetween = 0;  // Fraction between "idx1" and "idx2" where our value is.
+ 
+  if(value <= 0)      {  idx1 = idx2 = 0;            }    // accounts for an input <=0
+  else if(value >= 1)  {  idx1 = idx2 = NUM_COLORS-1; }    // accounts for an input >=0
+  else
+  {
+    value = value * (NUM_COLORS-1);        // Will multiply value by 3.
+    idx1  = floor(value);                  // Our desired color will be after this index.
+    idx2  = idx1+1;                        // ... and before this index (inclusive).
+    fractBetween = value - float(idx1);    // Distance between the two indexes (0-1).
+  }
+ 
+  red   = (color[idx2][0] - color[idx1][0])*fractBetween + color[idx1][0];
+  green = (color[idx2][1] - color[idx1][1])*fractBetween + color[idx1][1];
+  blue  = (color[idx2][2] - color[idx1][2])*fractBetween + color[idx1][2];
+  return QColor(red*255, green*255, blue*255);
+}
 
 CGraphics::CGraphics(QGLWidget* _owner)
 {
@@ -980,10 +1007,12 @@ void CGraphics::drawCircle(dReal x0,dReal y0,dReal z0,dReal r)
     glEnd();
 }
 
-void CGraphics::drawHollowCircle(dReal x0,dReal y0,dReal z0,dReal r, int color)
+void CGraphics::drawHollowCircle(dReal x0,dReal y0,dReal z0,dReal r, float color)
 {
     if (graphicDisabled) return;
-    QColor c(Qt::GlobalColor(color+2));
+    QColor c(getHeatMapColor(color));
+    printf("color (circle) = %f, %f, %f, value = %f\n", c.redF(), c.greenF(), c.blueF(), color);
+
     glDisable(GL_LIGHTING);
     glColor3f(c.redF(), c.greenF(), c.blueF());
     glLineWidth(2);
@@ -1303,10 +1332,12 @@ void CGraphics::drawCapsule (const dReal pos[3], const dReal R[12],
 }
 
 
-void CGraphics::drawLine (const dReal pos1[3], const dReal pos2[3], const dReal lw, int color)
+
+void CGraphics::drawLine (const dReal pos1[3], const dReal pos2[3], const dReal lw, float color)
 {
     if (graphicDisabled) return;
-    QColor c(Qt::GlobalColor(color+2));
+    QColor c(getHeatMapColor(color));
+    // printf("color (line) = %f, %f, %f\n", c.redF(), c.greenF(), c.blueF());
     glDisable (GL_LIGHTING);
     glColor3f(c.redF(), c.greenF(), c.blueF());
     glLineWidth(lw);

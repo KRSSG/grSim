@@ -93,9 +93,9 @@ public:
     void drawCylinder (const dReal pos[3], const dReal R[12],dReal length, dReal radius);
     void drawCylinder_TopTextured (const dReal pos[3], const dReal R[12],dReal length, dReal radius,int tex_id,bool robot=false);
     void drawCapsule (const dReal pos[3], const dReal R[12],dReal length, dReal radius);
-    void drawLine (const dReal pos1[3], const dReal pos2[3], const dReal lw, int color = 1);
+    void drawLine (const dReal pos1[3], const dReal pos2[3], const dReal lw, float color = 1);
     void drawCircle(dReal x0,dReal y0,dReal z0,dReal r);
-    void drawHollowCircle(dReal x0,dReal y0,dReal z0,dReal r, int color = 1);
+    void drawHollowCircle(dReal x0,dReal y0,dReal z0,dReal r, float color = 1);
 
 
 };
